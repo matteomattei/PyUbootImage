@@ -1,3 +1,3 @@
-from py_uboot_image import *
+from PyUbootImage import *
 __all__ = ['uboot_image']
 
