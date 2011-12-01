@@ -4,7 +4,7 @@ from setuptools import setup,find_packages
 
 setup(
 	name='PyUbootImage',
-	version='0.1a',
+	version='0.1b',
 	description='Uboot image parser',
 	long_description='This package provides a way to read u-boot images header and to retrieve encapsulated binaries. It also handles multi-image files.',
 	author='Matteo Mattei; Nicola Ponzeveroni',
@@ -15,7 +15,7 @@ setup(
 	classifiers = [
 		"Programming Language :: Python",
 		"Programming Language :: Python :: 3",
-		"Development Status :: 1 - Alpha",
+		"Development Status :: 4 - Beta",
 		"Environment :: Other Environment",
 		"Intended Audience :: Developers",
 		"License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
