@@ -1,32 +1,33 @@
 #!/usr/bin/env python
-
 """
 PyUbootImage library for reading u-boot image files as defined in the official u-boot sources.
 """
 
+import sys
+
 """ Operating System Codes """
-IH_OS_INVALID		=0	# Invalid OS
-IH_OS_OPENBSD		=1	# OpenBSD
-IH_OS_NETBSD		=2	# NetBSD
-IH_OS_FREEBSD		=3	# FreeBSD
-IH_OS_4_4BSD		=4	# 4.4BSD
-IH_OS_LINUX		=5	# Linux
-IH_OS_SVR4		=6	# SVR4
-IH_OS_ESIX		=7	# Esix
-IH_OS_SOLARIS		=8	# Solaris
-IH_OS_IRIX		=9	# Irix
-IH_OS_SCO		=10	# SCO	
-IH_OS_DELL		=11	# Dell
-IH_OS_NCR		=12	# NCR
-IH_OS_LYNXOS		=13	# LynxOS
-IH_OS_VXWORKS		=14	# VxWorks
-IH_OS_PSOS		=15	# pSOS
-IH_OS_QNX		=16	# QNX
-IH_OS_U_BOOT		=17	# Firmware
-IH_OS_RTEMS		=18	# RTEMS
-IH_OS_ARTOS		=19	# ARTOS
-IH_OS_UNITY		=20	# Unity OS
-IH_OS_INTEGRITY		=21	# INTEGRITY
+IH_OS_INVALID   =0	# Invalid OS
+IH_OS_OPENBSD   =1	# OpenBSD
+IH_OS_NETBSD    =2	# NetBSD
+IH_OS_FREEBSD   =3	# FreeBSD
+IH_OS_4_4BSD    =4	# 4.4BSD
+IH_OS_LINUX     =5	# Linux
+IH_OS_SVR4      =6	# SVR4
+IH_OS_ESIX      =7	# Esix
+IH_OS_SOLARIS   =8	# Solaris
+IH_OS_IRIX      =9	# Irix
+IH_OS_SCO       =10	# SCO
+IH_OS_DELL      =11	# Dell
+IH_OS_NCR       =12	# NCR
+IH_OS_LYNXOS    =13	# LynxOS
+IH_OS_VXWORKS   =14	# VxWorks
+IH_OS_PSOS      =15	# pSOS
+IH_OS_QNX       =16	# QNX
+IH_OS_U_BOOT    =17	# Firmware
+IH_OS_RTEMS     =18	# RTEMS
+IH_OS_ARTOS     =19	# ARTOS
+IH_OS_UNITY     =20	# Unity OS
+IH_OS_INTEGRITY =21	# INTEGRITY
 
 """ Array containig the string with OS Names
 Corresponding to the ih_os numeric value """
@@ -51,30 +52,30 @@ IH_OS_LOOKUP = [
 	'Firmware', \
 	'RTEMS', \
 	'ARTOS', \
-	'Unity'
-	'INTEGRITY', \
+	'Unity',
+	'INTEGRITY' \
 ]
 
 """ CPU Architecture Codes (supported by Linux) """
-IH_ARCH_INVALID		=0	# Invalid CPU
-IH_ARCH_ALPHA		=1	# Alpha
-IH_ARCH_ARM		=2	# ARM
-IH_ARCH_I386		=3	# Intel x86
-IH_ARCH_IA64		=4	# IA64
-IH_ARCH_MIPS		=5	# MIPS
-IH_ARCH_MIPS64		=6	# MIPS 64 Bit
-IH_ARCH_PPC		=7	# PowerPC
-IH_ARCH_S390		=8	# IBM S390
-IH_ARCH_SH		=9	# SuperH
-IH_ARCH_SPARC		=10	# Sparc
-IH_ARCH_SPARC64		=11	# Sparc 64 Bit
-IH_ARCH_M68K		=12	# M68K
-IH_ARCH_NIOS		=13	# Nios-32
-IH_ARCH_MICROBLAZE	=14	# MicroBlaze
-IH_ARCH_NIOS2		=15	# Nios-II
-IH_ARCH_BLACKFIN	=16	# Blackfin
-IH_ARCH_AVR32		=17	# AVR32
-IH_ARCH_ST200	        =18	# STMicroelectronics ST200
+IH_ARCH_INVALID    =0	# Invalid CPU
+IH_ARCH_ALPHA      =1	# Alpha
+IH_ARCH_ARM        =2	# ARM
+IH_ARCH_I386       =3	# Intel x86
+IH_ARCH_IA64       =4	# IA64
+IH_ARCH_MIPS       =5	# MIPS
+IH_ARCH_MIPS64     =6	# MIPS 64 Bit
+IH_ARCH_PPC        =7	# PowerPC
+IH_ARCH_S390       =8	# IBM S390
+IH_ARCH_SH         =9	# SuperH
+IH_ARCH_SPARC      =10	# Sparc
+IH_ARCH_SPARC64    =11	# Sparc 64 Bit
+IH_ARCH_M68K       =12	# M68K
+IH_ARCH_NIOS       =13	# Nios-32
+IH_ARCH_MICROBLAZE =14	# MicroBlaze
+IH_ARCH_NIOS2      =15	# Nios-II
+IH_ARCH_BLACKFIN   =16	# Blackfin
+IH_ARCH_AVR32      =17	# AVR32
+IH_ARCH_ST200      =18	# STMicroelectronics ST200
 
 """ Array containig the string with Architecture Names
 Corresponding to the ih_arch numeric value """
@@ -101,16 +102,16 @@ IH_ARCH_LOOKUP= \
 	'STMicroelectronics' \
 ]
 
-IH_TYPE_INVALID		=0	# Invalid Image
-IH_TYPE_STANDALONE	=1	# Standalone Program
-IH_TYPE_KERNEL		=2	# OS Kernel Image
-IH_TYPE_RAMDISK		=3	# RAMDisk Image
-IH_TYPE_MULTI		=4	# Multi-File Image
-IH_TYPE_FIRMWARE	=5	# Firmware Image
-IH_TYPE_SCRIPT		=6	# Script file
-IH_TYPE_FILESYSTEM	=7	# Filesystem Image (any type)
-IH_TYPE_FLATDT		=8	# Binary Flat Device Tree Blob
-IH_TYPE_KWBIMAGE	=9	# Kirkwood Boot Image
+IH_TYPE_INVALID    =0	# Invalid Image
+IH_TYPE_STANDALONE =1	# Standalone Program
+IH_TYPE_KERNEL     =2	# OS Kernel Image
+IH_TYPE_RAMDISK    =3	# RAMDisk Image
+IH_TYPE_MULTI      =4	# Multi-File Image
+IH_TYPE_FIRMWARE   =5	# Firmware Image
+IH_TYPE_SCRIPT     =6	# Script file
+IH_TYPE_FILESYSTEM =7	# Filesystem Image (any type)
+IH_TYPE_FLATDT     =8	# Binary Flat Device Tree Blob
+IH_TYPE_KWBIMAGE   =9	# Kirkwood Boot Image
 
 IH_TYPE_LOOKUP = [ \
 	'Invalid Image',\
@@ -123,21 +124,22 @@ IH_TYPE_LOOKUP = [ \
 	'Filesystem Image (any type)',\
 	'Binary Flat Device Tree Blob',\
 	'Kirkwood Boot Image'\
-	]
+]
 
 """ Compression Types """
-IH_COMP_NONE		=0	# No	 Compression Used
-IH_COMP_GZIP		=1	# gzip	 Compression Used
-IH_COMP_BZIP2		=2	# bzip2 Compression Used
-IH_COMP_LZMA		=3	# lzma  Compression Used
+IH_COMP_NONE  =0	# No Compression Used
+IH_COMP_GZIP  =1	# gzip Compression Used
+IH_COMP_BZIP2 =2	# bzip2 Compression Used
+IH_COMP_LZMA  =3	# lzma Compression Used
 
 IH_COMP_LOOKUP = [ 'None','gzip','bzip2','lzma'] 
 
 IH_COMP_EXT_LOOKUP = [ 'dat','gz','bz2','lzma'] 
 
 
-IH_MAGIC	=0x27051956	# Image Magic Number
-IH_NMLEN	=	32	# Image Name Length
+IH_MAGIC = 0x27051956	# Image Magic Number
+IH_NMLEN =         32	# Image Name Length
+
 
 class uboot_image:
 	"""Main class of this library containing
@@ -187,6 +189,14 @@ class uboot_image:
 			ret = ret*256 + (ord(myfile.read(1))&0xFF)
 		return ret
 		
+	def readIntegers(self,myfile,lenghts):
+		""" Assemble multibyte integer array from file returning their list"""
+		ret = []
+		for length in lengths:
+  			val = self.readInteger(buf,myfile,lenght)
+  			ret.append( val )
+		return ret
+
 	def readShort(self,myfile):
 		""" Assemble 2 bytes integer """
 		return self.readInteger(myfile,2)
@@ -203,7 +213,10 @@ class uboot_image:
 		""" Assemble multibyte integer from array"""
 		ret = 0
 		for i in range(start,start+lenght):
-  			ret = ret *256 + (ord(buf[i])&0xFF)
+			if sys.version_info[0] < 3:
+				ret = ret * 256 + (ord(buf[i]) & 0xFF)
+			else:
+				ret = ret * 256 + (int(buf[i]) & 0xFF)
 		return ret, start+lenght
 		
 	def makeIntegers(self,buf,start,lenghts):
@@ -212,9 +225,9 @@ class uboot_image:
 		in a list"""
 		ret = []
 		for length in lenghts:
-  			val,start = self.makeInteger(buf,start,length)
-  			ret.append( val )
-  		ret.append( start )
+			val,start = self.makeInteger(buf,start,length)
+			ret.append( val )
+		ret.append( start )
 		return ret
 
 	def v(self, lookup, n) :
@@ -241,19 +254,19 @@ class uboot_image:
 	
 	def fill(self,buf):
 		"""Fill the header only with the values read from buf array"""
-		self.ih_magic, 	\
-		self.ih_hcrc, 	\
-		self.ih_time,	\
-		self.ih_size,	\
-		self.ih_load,	\
-		self.ih_ep,	\
-		self.ih_dcrc,	\
-		self.ih_os,	\
-		self.ih_arch,	\
-		self.ih_type,	\
-		self.ih_comp,	\
+		self.ih_magic, \
+		self.ih_hcrc,  \
+		self.ih_time,  \
+		self.ih_size,  \
+		self.ih_load,  \
+		self.ih_ep,    \
+		self.ih_dcrc,  \
+		self.ih_os,    \
+		self.ih_arch,  \
+		self.ih_type,  \
+		self.ih_comp,  \
 		end = self.makeIntegers(buf,0,(4,4,4,4,4,4,4,1,1,1,1))
-		self.ih_name=buf[end:end+IH_NMLEN]
+		self.ih_name = buf[end:end + IH_NMLEN]
 		return end + IH_NMLEN
 	
 	def checkMagic(self):
@@ -278,18 +291,18 @@ class uboot_image:
 		"""Return a dictionary with a human-readable version
 		of the content of the header"""
 		return { \
-			"MAGIC":self.ih_magic, 		\
-			"HCRC" :self.ih_hcrc, 		\
-			"TIME" :self.ih_time,		\
-			"SIZE" :self.ih_size,		\
-			"LOAD" :self.ih_load,		\
-			"EP"   :self.ih_ep,		\
-			"DCRC" :self.ih_dcrc,		\
-			"OS"   :self.os_name(),		\
-			"ARCH" :self.arch_name(),	\
-			"TYPE" :self.type_name(),	\
-			"COMP" :self.comp_name(),	\
-			"NAME" :self.ih_name, 		\
+			"MAGIC":self.ih_magic,    \
+			"HCRC" :self.ih_hcrc,     \
+			"TIME" :self.ih_time,     \
+			"SIZE" :self.ih_size,     \
+			"LOAD" :self.ih_load,     \
+			"EP"   :self.ih_ep,       \
+			"DCRC" :self.ih_dcrc,     \
+			"OS"   :self.os_name(),   \
+			"ARCH" :self.arch_name(), \
+			"TYPE" :self.type_name(), \
+			"COMP" :self.comp_name(), \
+			"NAME" :self.ih_name,     \
 			"PARTS":len(self.parts)
 			}
 
@@ -313,23 +326,22 @@ class uboot_image:
 
 
 if __name__ == '__main__':
-	import sys
 	if len(sys.argv) < 2:
 		sys.stdout.write('Usage: %s path_to_u-boot_image\n' % sys.argv[0])
 		sys.exit(0)
-	f = file(sys.argv[1],'rb')
+	f = open(sys.argv[1], 'rb')
 	image_data = f.read()
 	f.close()
 	image = uboot_image().parse(image_data)
 	if not image.checkMagic() :
-		sys.stdout.write("bad magic number\n")
+		sys.stdout.write("Bad magic number!\n")
 		sys.exit(1)
-	sys.stdout.write("found image \n\t", "\n\t".join( [ a[0]+":"+str(a[1]) for a in image.getInfo().items() ] ))
-	format_string = 'part_%02d.'+IH_COMP_EXT_LOOKUP[image.ih_comp]
-	i=0
+	sys.stdout.write("Found image!\n\t" + "\n\t".join( [ a[0].ljust(5) + ": " + str(a[1] if type(a[1]) != bytes else a[1].decode('latin-1')) for a in image.getInfo().items() ] ) + "\n")
+	format_string = 'part_%02d.' + IH_COMP_EXT_LOOKUP[image.ih_comp]
+	i = 0
 	for part in image.parts :
-		f = file( format_string%i, 'wb' )
+		f = open( format_string % i, 'wb' )
 		f.write(part)
 		f.close()
-		i+=1
+		i += 1
 	sys.exit(0)
