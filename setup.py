@@ -4,11 +4,11 @@ from setuptools import setup,find_packages
 
 setup(
 	name='PyUbootImage',
-	version='0.2d',
+	version='0.3',
 	description='Uboot image parser',
 	long_description='This package provides a way to read u-boot images header and to retrieve encapsulated binaries. It also handles multi-image files.',
-	author='Matteo Mattei; Nicola Ponzeveroni',
-	author_email='info@matteomattei.com; nicola.ponzeveroni@gilbarco.com',
+	author='Matteo Mattei; Nicola Ponzeveroni; Roberto Celeste',
+	author_email='info@matteomattei.com; nicola.ponzeveroni@gilbarco.com; roberto.celeste@gmail.com',
 	url='https://github.com/matteomattei/PyUbootImage',
 	packages=find_packages(),
 	keywords = ["filesystem", "parser", "u-boot"],
