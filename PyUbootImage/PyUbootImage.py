@@ -30,7 +30,7 @@ IH_OS_ARTOS = 19  # ARTOS
 IH_OS_UNITY = 20  # Unity OS
 IH_OS_INTEGRITY = 21  # INTEGRITY
 
-# Array containig the string with OS Names
+# Array containing the string with OS Names
 # corresponding to the ih_os numeric value
 IH_OS_LOOKUP = [
     'Invalid OS',
@@ -78,7 +78,7 @@ IH_ARCH_BLACKFIN = 16  # Blackfin
 IH_ARCH_AVR32 = 17  # AVR32
 IH_ARCH_ST200 = 18  # STMicroelectronics ST200
 
-# Array containig the string with Architecture Names
+# Array containing the string with Architecture Names
 # corresponding to the ih_arch numeric value
 IH_ARCH_LOOKUP = [
     'Invalid',
@@ -189,11 +189,11 @@ class uboot_image:
             ret = ret * 256 + (ord(myfile.read(1)) & 0xFF)
         return ret
 
-    def readIntegers(self, myfile, lenghts):
+    def readIntegers(self, myfile, lengths):
         """Assemble multibyte integer array from file returning their list."""
         ret = []
         for length in lengths:
-            val = self.readInteger(buf, myfile, lenght)
+            val = self.readInteger(buf, myfile, length)
             ret.append(val)
         return ret
 
@@ -209,22 +209,22 @@ class uboot_image:
         """Assemble 8 byte integer."""
         return self.readInteger(myfile, 8)
 
-    def makeInteger(self, buf, start, lenght):
+    def makeInteger(self, buf, start, length):
         """Assemble multibyte integer from array."""
         ret = 0
-        for i in range(start, start + lenght):
+        for i in range(start, start + length):
             if sys.version_info[0] < 3:
                 ret = ret * 256 + (ord(buf[i]) & 0xFF)
             else:
                 ret = ret * 256 + (int(buf[i]) & 0xFF)
-        return ret, start + lenght
+        return ret, start + length
 
-    def makeIntegers(self, buf, start, lenghts):
+    def makeIntegers(self, buf, start, lengths):
         """Assemble a set of consecutive multibyte
-        integers given their lenghts and return them
+        integers given their lengths and return them
         in a list."""
         ret = []
-        for length in lenghts:
+        for length in lengths:
             val, start = self.makeInteger(buf, start, length)
             ret.append(val)
         ret.append(start)
