@@ -185,7 +185,7 @@ class uboot_image:
     def readInteger(self, myfile, length):
         """Assemble multibyte integer from file."""
         ret = 0
-        for i in range(0, length):
+        for _ in range(length):
             ret = ret * 256 + (ord(myfile.read(1)) & 0xFF)
         return ret
 
@@ -279,7 +279,7 @@ class uboot_image:
         """Read image header and extract the binary images."""
         end = self.fill(buf)
         if self.ih_type == IH_TYPE_MULTI:
-            parts = self.getMultiParts(buf, end)
+            self.parts = self.getMultiParts(buf, end)
         else:
             self.parts = [buf[end : end + self.ih_size]]
         return self
@@ -331,26 +331,21 @@ class uboot_image:
                 size += 4 - pad
             start += size
             p.append(part)
-        self.parts = p
+        return p
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        sys.stdout.write('Usage: %s path_to_u-boot_image\n' % sys.argv[0])
+        print('Usage: %s path_to_u-boot_image' % sys.argv[0])
         sys.exit(0)
-    f = open(sys.argv[1], 'rb')
-    image_data = f.read()
-    f.close()
+    with open(sys.argv[1], 'rb') as f:
+        image_data = f.read()
     image = uboot_image().parse(image_data)
     if not image.checkMagic():
-        sys.stdout.write("Bad magic number!\n")
+        print("Bad magic number!")
         sys.exit(1)
-    sys.stdout.write("Found image!\n\t" + "\n\t".join([a[0].ljust(5) + ": " + str(a[1] if not isinstance(a[1], bytes) else a[1].decode('latin-1')) for a in image.getInfo().items()]) + "\n")
+    print("Found image!\n\t" + "\n\t".join([a[0].ljust(5) + ": " + str(a[1] if not isinstance(a[1], bytes) else a[1].decode('latin-1')) for a in image.getInfo().items()]))
     format_string = 'part_%02d.' + IH_COMP_EXT_LOOKUP[image.ih_comp]
-    i = 0
-    for part in image.parts:
-        f = open(format_string % i, 'wb')
-        f.write(part)
-        f.close()
-        i += 1
-    sys.exit(0)
+    for i, part in enumerate(image.parts):
+        with open(format_string % i, 'wb') as f:
+            f.write(part)
