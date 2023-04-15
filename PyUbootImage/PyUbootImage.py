@@ -182,33 +182,6 @@ class uboot_image:
         as command interpreter (=> Shell Scripts).
     """
 
-    def readInteger(self, myfile, length):
-        """Assemble multibyte integer from file."""
-        ret = 0
-        for _ in range(length):
-            ret = ret * 256 + (ord(myfile.read(1)) & 0xFF)
-        return ret
-
-    def readIntegers(self, myfile, lengths):
-        """Assemble multibyte integer array from file returning their list."""
-        ret = []
-        for length in lengths:
-            val = self.readInteger(buf, myfile, length)
-            ret.append(val)
-        return ret
-
-    def readShort(self, myfile):
-        """Assemble 2 bytes integer."""
-        return self.readInteger(myfile, 2)
-
-    def readInt(self, myfile):
-        """Assemble 4 bytes integer."""
-        return self.readInteger(myfile, 4)
-
-    def readLong(self, myfile):
-        """Assemble 8 byte integer."""
-        return self.readInteger(myfile, 8)
-
     def makeInteger(self, buf, start, length):
         """Assemble multibyte integer from array."""
         ret = 0
