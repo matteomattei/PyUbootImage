@@ -4,6 +4,7 @@ PyUbootImage library for reading u-boot image files
 as defined in the official u-boot sources.
 """
 
+import struct
 import sys
 
 # Operating System Codes
@@ -182,35 +183,8 @@ class uboot_image:
         as command interpreter (=> Shell Scripts).
     """
 
-    def makeInteger(self, buf, start, length):
-        """Assemble multibyte integer from array."""
-        ret = 0
-        for i in range(start, start + length):
-            if sys.version_info[0] < 3:
-                ret = ret * 256 + (ord(buf[i]) & 0xFF)
-            else:
-                ret = ret * 256 + (int(buf[i]) & 0xFF)
-        return ret, start + length
-
-    def makeIntegers(self, buf, start, lengths):
-        """Assemble a set of consecutive multibyte
-        integers given their lengths and return them
-        in a list."""
-        ret = []
-        for length in lengths:
-            val, start = self.makeInteger(buf, start, length)
-            ret.append(val)
-        ret.append(start)
-        return ret
-
-    def v(self, lookup, n):
-        """Utility method to use this libraries lookup tables."""
-        if n < 0 or n >= len(lookup):
-            return '<not supported %02X>' % n
-        return lookup[n]
-
     def __init__(self):
-        """Main constructor that build not-initialized object."""
+        """Main constructor that builds a non-initialized object."""
         self.ih_magic = 0  # Image Header Magic Number
         self.ih_hcrc = 0  # Image Header CRC Checksum
         self.ih_time = 0  # Image Creation Timestamp
@@ -225,8 +199,15 @@ class uboot_image:
         self.ih_name = ''  # Image Name
         self.parts = []
 
+    def v(self, lookup, n):
+        """Utility method to use this library's lookup tables."""
+        if n < 0 or n >= len(lookup):
+            return '<not supported %02X>' % n
+        return lookup[n]
+
     def fill(self, buf):
         """Fill the header only with the values read from buf array."""
+        fmt = "!7I4B32s"
         (
             self.ih_magic,
             self.ih_hcrc,
@@ -239,10 +220,9 @@ class uboot_image:
             self.ih_arch,
             self.ih_type,
             self.ih_comp,
-            end,
-        ) = self.makeIntegers(buf, 0, (4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1))
-        self.ih_name = buf[end : end + IH_NMLEN]
-        return end + IH_NMLEN
+            self.ih_name
+        ) = struct.unpack_from(fmt, buf)
+        return struct.calcsize(fmt)
 
     def checkMagic(self):
         """Check if the magic number contained in ih_magic field is correct or not."""
@@ -292,10 +272,13 @@ class uboot_image:
         """Internal method used by parse() to separate binary images."""
         ofs = []
         p = []
+        fmt = "!I"
+        fmt_size = struct.calcsize(fmt)
         while True:
-            val, start = self.makeInteger(buf, start, 4)
+            val = struct.unpack_from(fmt, buf, start)[0]
             if val == 0:
                 break
+            start += fmt_size
             ofs.append(val)
         for size in ofs:
             part = buf[start : start + size]
