@@ -39,6 +39,13 @@ class OperatingSystem(_Codes):
     ARTOS = 19  # ARTOS
     UNITY = 20  # Unity OS
     INTEGRITY = 21  # INTEGRITY
+    OSE = 22  # OSE
+    PLAN9 = 23  # Plan 9
+    OPENRTOS = 24  # OpenRTOS
+    ARM_TRUSTED_FIRMWARE = 25  # ARM Trusted Firmware
+    TEE = 26  # Trusted Execution Environment
+    OPENSBI = 27  # RISC-V OpenSBI
+    EFI = 28  # EFI Firmware (e.g. GRUB2)
 
 
 # Array containing the string with OS Names
@@ -65,7 +72,14 @@ OperatingSystem.LOOKUP_TABLE = [
     'RTEMS',
     'ARTOS',
     'Unity',
-    'INTEGRITY'
+    'INTEGRITY',
+    "Enea OSE",
+    "Plan 9",
+    "OpenRTOS",
+    "ARM Trusted Firmware",
+    "Trusted Execution Environment",
+    "RISC-V OpenSBI",
+    "EFI Firmware"
 ]
 
 
@@ -90,6 +104,14 @@ class Architecture(_Codes):
     BLACKFIN = 16  # Blackfin
     AVR32 = 17  # AVR32
     ST200 = 18  # STMicroelectronics ST200
+    SANDBOX = 19  # Sandbox architecture (test only)
+    NDS32 = 20  # ANDES Technology - NDS32
+    OPENRISC = 21  # OpenRISC 1000
+    ARM64 = 22  # ARM64
+    ARC = 23  # Synopsys DesignWare ARC
+    X86_64 = 24  # AMD x86_64, Intel and Via
+    XTENSA = 25  # Xtensa
+    RISCV = 26  # RISC-V
 
 
 # Array containing the string with Architecture Names
@@ -98,22 +120,30 @@ Architecture.LOOKUP_TABLE = [
     'Invalid',
     'Alpha',
     'ARM',
-    'Intel',
+    'Intel x86',
     'IA64',
     'MIPS',
-    'MIPS',
+    'MIPS 64 Bit',
     'PowerPC',
-    'IBM',
+    'IBM S390',
     'SuperH',
-    'Sparc',
-    'Sparc',
+    'SPARC',
+    'SPARC 64 Bit',
     'M68K',
     'Nios-32',
     'MicroBlaze',
     'Nios-II',
     'Blackfin',
     'AVR32',
-    'STMicroelectronics'
+    'STMicroelectronics ST200',
+    "Sandbox",
+    "NDS32",
+    "OpenRISC 1000",
+    "AArch64",
+    "ARC",
+    "AMD x86_64",
+    "Xtensa",
+    "RISC-V"
 ]
 
 
@@ -128,6 +158,39 @@ class Image(_Codes):
     FILESYSTEM = 7  # Filesystem Image (any type)
     FLATDT = 8  # Binary Flat Device Tree Blob
     KWBIMAGE = 9  # Kirkwood Boot Image
+    IMXIMAGE = 10  # Freescale IMXBoot Image
+    UBLIMAGE = 11  # Davinci UBL Image
+    OMAPIMAGE = 12  # TI OMAP Config Header Image
+    AISIMAGE = 13  # TI Davinci AIS Image
+    KERNEL_NOLOAD = 14  # OS Kernel Image, can run from any load address
+    PBLIMAGE = 15  # Freescale PBL Boot Image
+    MXSIMAGE = 16  # Freescale MXSBoot Image
+    GPIMAGE = 17  # TI Keystone GPHeader Image
+    ATMELIMAGE = 18  # ATMEL ROM bootable Image
+    SOCFPGAIMAGE = 19  # Altera SOCFPGA CV/AV Preloader
+    X86_SETUP = 20  # x86 setup.bin Image
+    LPC32XXIMAGE = 21  # x86 setup.bin Image
+    LOADABLE = 22  # A list of typeless images
+    RKIMAGE = 23  # Rockchip Boot Image
+    RKSD = 24  # Rockchip SD card
+    RKSPI = 25  # Rockchip SPI image
+    ZYNQIMAGE = 26  # Xilinx Zynq Boot Image
+    ZYNQMPIMAGE = 27  # Xilinx ZynqMP Boot Image
+    ZYNQMPBIF = 28  # Xilinx ZynqMP Boot Image (bif)
+    FPGA = 29  # FPGA Image
+    VYBRIDIMAGE = 30  # VYBRID .vyb Image
+    TEE = 31  # Trusted Execution Environment OS Image
+    FIRMWARE_IVT = 32  # Firmware Image with HABv4 IVT
+    PMMC = 33  # TI Power Management Micro-Controller Firmware
+    STM32IMAGE = 34  # STMicroelectronics STM32 Image
+    SOCFPGAIMAGE_V1 = 35  # Altera SOCFPGA A10 Preloader
+    MTKIMAGE = 36  # MediaTek BootROM loadable Image
+    IMX8MIMAGE = 37  # Freescale IMX8MBoot Image
+    IMX8IMAGE = 38  # Freescale IMX8Boot Image
+    COPRO = 39  # Coprocessor Image for remoteproc
+    SUNXI_EGON = 40  # Allwinner eGON Boot Image
+    SUNXI_TOC0 = 41  # Allwinner TOC0 Boot Image
+    FDT_LEGACY = 42  # Binary Flat Device Tree Blob	in a Legacy Image
 
 
 Image.LOOKUP_TABLE = [
@@ -140,7 +203,40 @@ Image.LOOKUP_TABLE = [
     'Script file',
     'Filesystem Image (any type)',
     'Binary Flat Device Tree Blob',
-    'Kirkwood Boot Image'
+    'Kirkwood Boot Image',
+    "Freescale i.MX Boot Image",
+    "Davinci UBL Image",
+    "TI OMAP SPL With GP CH",
+    "Davinci AIS image",
+    "Kernel Image (no loading done)",
+    "Freescale PBL Boot Image",
+    "Freescale MXS Boot Image",
+    "TI Keystone SPL Image",
+    "ATMEL ROM-Boot Image",
+    "Altera SoCFPGA CV/AV preloader",
+    "x86 setup.bin",
+    "LPC32XX Boot Image",
+    "A list of typeless images",
+    "Rockchip Boot Image",
+    "Rockchip SD Boot Image",
+    "Rockchip SPI Boot Image",
+    "Xilinx Zynq Boot Image",
+    "Xilinx ZynqMP Boot Image",
+    "Xilinx ZynqMP Boot Image (bif)",
+    "FPGA Image",
+    "Vybrid Boot Image",
+    "Trusted Execution Environment Image",
+    "Firmware with HABv4 IVT",
+    "TI Power Management Micro-Controller Firmware",
+    "STMicroelectronics STM32 Image",
+    "Altera SOCFPGA A10 Preloader",
+    "MediaTek BootROM loadable Image",
+    "NXP i.MX8M Boot Image",
+    "NXP i.MX8 Boot Image",
+    "Coprocessor Image",
+    "Allwinner eGON Boot Image",
+    "Allwinner TOC0 Boot Image",
+    "Legacy Image with Flat Device Tree"
 ]
 
 
@@ -150,11 +246,14 @@ class Compression(_Codes):
     GZIP = 1  # gzip Compression Used
     BZIP2 = 2  # bzip2 Compression Used
     LZMA = 3  # lzma Compression Used
+    LZO = 4  # lzo Compression Used
+    LZ4 = 5  # lz4 Compression Used
+    ZSTD = 6  # zstd Compression Used
 
 
-Compression.LOOKUP_TABLE = ['None', 'gzip', 'bzip2', 'lzma']
+Compression.LOOKUP_TABLE = ['None', 'gzip', 'bzip2', 'lzma', "lzo", "lz4", "zstd"]
 
-IH_COMP_EXT_LOOKUP = ['dat', 'gz', 'bz2', 'lzma']
+IH_COMP_EXT_LOOKUP = ['dat', 'gz', 'bz2', 'lzma', "lzo", "lz4", "zst"]
 
 
 IH_MAGIC = 0x27051956  # Image Magic Number
