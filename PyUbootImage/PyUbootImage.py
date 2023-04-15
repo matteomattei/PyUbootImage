@@ -249,15 +249,19 @@ class uboot_image:
             self.parts = [buf[self.SIZE : self.SIZE + self.ih_size]]
         return self
 
+    @property
     def os_name(self):
         return str(self.ih_os)
 
+    @property
     def arch_name(self):
         return str(self.ih_arch)
 
+    @property
     def type_name(self):
         return str(self.ih_type)
 
+    @property
     def comp_name(self):
         return str(self.ih_comp)
 
@@ -272,10 +276,10 @@ class uboot_image:
             "LOAD": self.ih_load,
             "EP": self.ih_ep,
             "DCRC": self.ih_dcrc,
-            "OS": self.os_name(),
-            "ARCH": self.arch_name(),
-            "TYPE": self.type_name(),
-            "COMP": self.comp_name(),
+            "OS": self.os_name,
+            "ARCH": self.arch_name,
+            "TYPE": self.type_name,
+            "COMP": self.comp_name,
             "NAME": self.ih_name,
             "PARTS": len(self.parts)
         }
