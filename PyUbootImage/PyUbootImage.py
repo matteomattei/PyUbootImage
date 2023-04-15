@@ -6,34 +6,44 @@ as defined in the official u-boot sources.
 
 import struct
 import sys
+from enum import Enum
+
+
+class _Codes(Enum):
+
+    def __str__(self):
+        return self.LOOKUP_TABLE[self.value]
+
 
 # Operating System Codes
-IH_OS_INVALID = 0  # Invalid OS
-IH_OS_OPENBSD = 1  # OpenBSD
-IH_OS_NETBSD = 2  # NetBSD
-IH_OS_FREEBSD = 3  # FreeBSD
-IH_OS_4_4BSD = 4  # 4.4BSD
-IH_OS_LINUX = 5  # Linux
-IH_OS_SVR4 = 6  # SVR4
-IH_OS_ESIX = 7  # Esix
-IH_OS_SOLARIS = 8  # Solaris
-IH_OS_IRIX = 9  # Irix
-IH_OS_SCO = 10  # SCO
-IH_OS_DELL = 11  # Dell
-IH_OS_NCR = 12  # NCR
-IH_OS_LYNXOS = 13  # LynxOS
-IH_OS_VXWORKS = 14  # VxWorks
-IH_OS_PSOS = 15  # pSOS
-IH_OS_QNX = 16  # QNX
-IH_OS_U_BOOT = 17  # Firmware
-IH_OS_RTEMS = 18  # RTEMS
-IH_OS_ARTOS = 19  # ARTOS
-IH_OS_UNITY = 20  # Unity OS
-IH_OS_INTEGRITY = 21  # INTEGRITY
+class OperatingSystem(_Codes):
+    INVALID = 0  # Invalid OS
+    OPENBSD = 1  # OpenBSD
+    NETBSD = 2  # NetBSD
+    FREEBSD = 3  # FreeBSD
+    BSD4_4 = 4  # 4.4BSD
+    LINUX = 5  # Linux
+    SVR4 = 6  # SVR4
+    ESIX = 7  # Esix
+    SOLARIS = 8  # Solaris
+    IRIX = 9  # Irix
+    SCO = 10  # SCO
+    DELL = 11  # Dell
+    NCR = 12  # NCR
+    LYNXOS = 13  # LynxOS
+    VXWORKS = 14  # VxWorks
+    PSOS = 15  # pSOS
+    QNX = 16  # QNX
+    U_BOOT = 17  # Firmware
+    RTEMS = 18  # RTEMS
+    ARTOS = 19  # ARTOS
+    UNITY = 20  # Unity OS
+    INTEGRITY = 21  # INTEGRITY
+
 
 # Array containing the string with OS Names
 # corresponding to the ih_os numeric value
-IH_OS_LOOKUP = [
+OperatingSystem.LOOKUP_TABLE = [
     'Invalid OS',
     'OpenBSD',
     'NetBSD',
@@ -58,30 +68,33 @@ IH_OS_LOOKUP = [
     'INTEGRITY'
 ]
 
+
 # CPU Architecture Codes (supported by Linux)
-IH_ARCH_INVALID = 0  # Invalid CPU
-IH_ARCH_ALPHA = 1  # Alpha
-IH_ARCH_ARM = 2  # ARM
-IH_ARCH_I386 = 3  # Intel x86
-IH_ARCH_IA64 = 4  # IA64
-IH_ARCH_MIPS = 5  # MIPS
-IH_ARCH_MIPS64 = 6  # MIPS 64 Bit
-IH_ARCH_PPC = 7  # PowerPC
-IH_ARCH_S390 = 8  # IBM S390
-IH_ARCH_SH = 9  # SuperH
-IH_ARCH_SPARC = 10  # Sparc
-IH_ARCH_SPARC64 = 11  # Sparc 64 Bit
-IH_ARCH_M68K = 12  # M68K
-IH_ARCH_NIOS = 13  # Nios-32
-IH_ARCH_MICROBLAZE = 14  # MicroBlaze
-IH_ARCH_NIOS2 = 15  # Nios-II
-IH_ARCH_BLACKFIN = 16  # Blackfin
-IH_ARCH_AVR32 = 17  # AVR32
-IH_ARCH_ST200 = 18  # STMicroelectronics ST200
+class Architecture(_Codes):
+    INVALID = 0  # Invalid CPU
+    ALPHA = 1  # Alpha
+    ARM = 2  # ARM
+    I386 = 3  # Intel x86
+    IA64 = 4  # IA64
+    MIPS = 5  # MIPS
+    MIPS64 = 6  # MIPS 64 Bit
+    PPC = 7  # PowerPC
+    S390 = 8  # IBM S390
+    SH = 9  # SuperH
+    SPARC = 10  # Sparc
+    SPARC64 = 11  # Sparc 64 Bit
+    M68K = 12  # M68K
+    NIOS = 13  # Nios-32
+    MICROBLAZE = 14  # MicroBlaze
+    NIOS2 = 15  # Nios-II
+    BLACKFIN = 16  # Blackfin
+    AVR32 = 17  # AVR32
+    ST200 = 18  # STMicroelectronics ST200
+
 
 # Array containing the string with Architecture Names
 # corresponding to the ih_arch numeric value
-IH_ARCH_LOOKUP = [
+Architecture.LOOKUP_TABLE = [
     'Invalid',
     'Alpha',
     'ARM',
@@ -103,18 +116,21 @@ IH_ARCH_LOOKUP = [
     'STMicroelectronics'
 ]
 
-IH_TYPE_INVALID = 0  # Invalid Image
-IH_TYPE_STANDALONE = 1  # Standalone Program
-IH_TYPE_KERNEL = 2  # OS Kernel Image
-IH_TYPE_RAMDISK = 3  # RAMDisk Image
-IH_TYPE_MULTI = 4  # Multi-File Image
-IH_TYPE_FIRMWARE = 5  # Firmware Image
-IH_TYPE_SCRIPT = 6  # Script file
-IH_TYPE_FILESYSTEM = 7  # Filesystem Image (any type)
-IH_TYPE_FLATDT = 8  # Binary Flat Device Tree Blob
-IH_TYPE_KWBIMAGE = 9  # Kirkwood Boot Image
 
-IH_TYPE_LOOKUP = [
+class Image(_Codes):
+    INVALID = 0  # Invalid Image
+    STANDALONE = 1  # Standalone Program
+    KERNEL = 2  # OS Kernel Image
+    RAMDISK = 3  # RAMDisk Image
+    MULTI = 4  # Multi-File Image
+    FIRMWARE = 5  # Firmware Image
+    SCRIPT = 6  # Script file
+    FILESYSTEM = 7  # Filesystem Image (any type)
+    FLATDT = 8  # Binary Flat Device Tree Blob
+    KWBIMAGE = 9  # Kirkwood Boot Image
+
+
+Image.LOOKUP_TABLE = [
     'Invalid Image',
     'Standalone Program',
     'OS Kernel Image',
@@ -127,13 +143,16 @@ IH_TYPE_LOOKUP = [
     'Kirkwood Boot Image'
 ]
 
-# Compression Types
-IH_COMP_NONE = 0  # No Compression Used
-IH_COMP_GZIP = 1  # gzip Compression Used
-IH_COMP_BZIP2 = 2  # bzip2 Compression Used
-IH_COMP_LZMA = 3  # lzma Compression Used
 
-IH_COMP_LOOKUP = ['None', 'gzip', 'bzip2', 'lzma']
+# Compression Types
+class Compression(_Codes):
+    NONE = 0  # No Compression Used
+    GZIP = 1  # gzip Compression Used
+    BZIP2 = 2  # bzip2 Compression Used
+    LZMA = 3  # lzma Compression Used
+
+
+Compression.LOOKUP_TABLE = ['None', 'gzip', 'bzip2', 'lzma']
 
 IH_COMP_EXT_LOOKUP = ['dat', 'gz', 'bz2', 'lzma']
 
@@ -183,6 +202,13 @@ class uboot_image:
         as command interpreter (=> Shell Scripts).
     """
 
+    FORMAT = "!7I4B32s"
+    SIZE = struct.calcsize(FORMAT)
+    FIELDS = [
+        "ih_magic", "ih_hcrc", "ih_time", "ih_size", "ih_load", "ih_ep",
+        "ih_dcrc", "ih_os", "ih_arch", "ih_type", "ih_comp", "ih_name"
+    ]
+
     def __init__(self):
         """Main constructor that builds a non-initialized object."""
         self.ih_magic = 0  # Image Header Magic Number
@@ -199,30 +225,16 @@ class uboot_image:
         self.ih_name = ''  # Image Name
         self.parts = []
 
-    def v(self, lookup, n):
-        """Utility method to use this library's lookup tables."""
-        if n < 0 or n >= len(lookup):
-            return '<not supported %02X>' % n
-        return lookup[n]
-
     def fill(self, buf):
         """Fill the header only with the values read from buf array."""
-        fmt = "!7I4B32s"
-        (
-            self.ih_magic,
-            self.ih_hcrc,
-            self.ih_time,
-            self.ih_size,
-            self.ih_load,
-            self.ih_ep,
-            self.ih_dcrc,
-            self.ih_os,
-            self.ih_arch,
-            self.ih_type,
-            self.ih_comp,
-            self.ih_name
-        ) = struct.unpack_from(fmt, buf)
-        return struct.calcsize(fmt)
+        values = struct.unpack_from(self.FORMAT, buf)
+        for field, value in zip(self.FIELDS, values):
+            setattr(self, field, value)
+        self.ih_os = OperatingSystem(self.ih_os)
+        self.ih_arch = Architecture(self.ih_arch)
+        self.ih_type = Image(self.ih_type)
+        self.ih_comp = Compression(self.ih_comp)
+        self.ih_name = self.ih_name.rstrip(b'\x00').decode()
 
     def checkMagic(self):
         """Check if the magic number contained in ih_magic field is correct or not."""
@@ -230,24 +242,24 @@ class uboot_image:
 
     def parse(self, buf):
         """Read image header and extract the binary images."""
-        end = self.fill(buf)
-        if self.ih_type == IH_TYPE_MULTI:
-            self.parts = self.getMultiParts(buf, end)
+        self.fill(buf)
+        if self.ih_type == Image.MULTI:
+            self.parts = self.getMultiParts(buf, self.SIZE)
         else:
-            self.parts = [buf[end : end + self.ih_size]]
+            self.parts = [buf[self.SIZE : self.SIZE + self.ih_size]]
         return self
 
     def os_name(self):
-        return self.v(IH_OS_LOOKUP, self.ih_os)
+        return str(self.ih_os)
 
     def arch_name(self):
-        return self.v(IH_ARCH_LOOKUP, self.ih_arch)
+        return str(self.ih_arch)
 
     def type_name(self):
-        return self.v(IH_TYPE_LOOKUP, self.ih_type)
+        return str(self.ih_type)
 
     def comp_name(self):
-        return self.v(IH_COMP_LOOKUP, self.ih_comp)
+        return str(self.ih_comp)
 
     def getInfo(self):
         """Return a dictionary with a human-readable version
@@ -300,8 +312,8 @@ if __name__ == '__main__':
     if not image.checkMagic():
         print("Bad magic number!")
         sys.exit(1)
-    print("Found image!\n\t" + "\n\t".join([a[0].ljust(5) + ": " + str(a[1] if not isinstance(a[1], bytes) else a[1].decode('latin-1')) for a in image.getInfo().items()]))
-    format_string = 'part_%02d.' + IH_COMP_EXT_LOOKUP[image.ih_comp]
+    print("Found image!\n\t" + "\n\t".join([key.ljust(5) + ": " + str(val) for key, val in image.getInfo().items()]))
+    format_string = 'part_%02d.' + IH_COMP_EXT_LOOKUP[image.ih_comp.value]
     for i, part in enumerate(image.parts):
         with open(format_string % i, 'wb') as f:
             f.write(part)
