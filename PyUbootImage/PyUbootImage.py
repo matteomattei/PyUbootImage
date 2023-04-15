@@ -260,7 +260,7 @@ IH_MAGIC = 0x27051956  # Image Magic Number
 IH_NMLEN = 32  # Image Name Length
 
 
-class uboot_image:
+class UBootImage:
     """Main class of this library containing
     all the header fields and an array of binary images.
 
@@ -411,7 +411,7 @@ if __name__ == '__main__':
         sys.exit(0)
     with open(sys.argv[1], 'rb') as f:
         image_data = f.read()
-    image = uboot_image().parse(image_data)
+    image = UBootImage().parse(image_data)
     if not image.checkMagic():
         print("Bad magic number!")
         sys.exit(1)
