@@ -12,6 +12,9 @@ setup(
     url='https://github.com/matteomattei/PyUbootImage',
     packages=find_packages(),
     keywords=["filesystem", "parser", "u-boot"],
+    install_requires=[
+        "enum34;python_version<'3.4'",
+    ],
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
