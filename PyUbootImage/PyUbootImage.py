@@ -1,347 +1,422 @@
 #!/usr/bin/env python
 """
-PyUbootImage library for reading u-boot image files as defined in the official u-boot sources.
+PyUbootImage library for reading u-boot image files
+as defined in the official u-boot sources.
 """
 
+import struct
 import sys
+from enum import Enum
 
-""" Operating System Codes """
-IH_OS_INVALID   =0	# Invalid OS
-IH_OS_OPENBSD   =1	# OpenBSD
-IH_OS_NETBSD    =2	# NetBSD
-IH_OS_FREEBSD   =3	# FreeBSD
-IH_OS_4_4BSD    =4	# 4.4BSD
-IH_OS_LINUX     =5	# Linux
-IH_OS_SVR4      =6	# SVR4
-IH_OS_ESIX      =7	# Esix
-IH_OS_SOLARIS   =8	# Solaris
-IH_OS_IRIX      =9	# Irix
-IH_OS_SCO       =10	# SCO
-IH_OS_DELL      =11	# Dell
-IH_OS_NCR       =12	# NCR
-IH_OS_LYNXOS    =13	# LynxOS
-IH_OS_VXWORKS   =14	# VxWorks
-IH_OS_PSOS      =15	# pSOS
-IH_OS_QNX       =16	# QNX
-IH_OS_U_BOOT    =17	# Firmware
-IH_OS_RTEMS     =18	# RTEMS
-IH_OS_ARTOS     =19	# ARTOS
-IH_OS_UNITY     =20	# Unity OS
-IH_OS_INTEGRITY =21	# INTEGRITY
 
-""" Array containig the string with OS Names
-Corresponding to the ih_os numeric value """
-IH_OS_LOOKUP = [
-	'Invalid OS',\
-	'OpenBSD', \
-	'NetBSD', \
-	'FreeBSD', \
-	'4.4BSD', \
-	'Linux', \
-	'SVR4', \
-	'Esix', \
-	'Solaris', \
-	'Irix', \
-	'SCO', \
-	'Dell', \
-	'NCR', \
-	'LynxOS', \
-	'VxWorks', \
-	'pSOS', \
-	'QNX', \
-	'Firmware', \
-	'RTEMS', \
-	'ARTOS', \
-	'Unity',
-	'INTEGRITY' \
+class _Codes(Enum):
+
+    def __str__(self):
+        return self.LOOKUP_TABLE[self.value]
+
+
+# Operating System Codes
+class OperatingSystem(_Codes):
+    INVALID = 0  # Invalid OS
+    OPENBSD = 1  # OpenBSD
+    NETBSD = 2  # NetBSD
+    FREEBSD = 3  # FreeBSD
+    BSD4_4 = 4  # 4.4BSD
+    LINUX = 5  # Linux
+    SVR4 = 6  # SVR4
+    ESIX = 7  # Esix
+    SOLARIS = 8  # Solaris
+    IRIX = 9  # Irix
+    SCO = 10  # SCO
+    DELL = 11  # Dell
+    NCR = 12  # NCR
+    LYNXOS = 13  # LynxOS
+    VXWORKS = 14  # VxWorks
+    PSOS = 15  # pSOS
+    QNX = 16  # QNX
+    U_BOOT = 17  # Firmware
+    RTEMS = 18  # RTEMS
+    ARTOS = 19  # ARTOS
+    UNITY = 20  # Unity OS
+    INTEGRITY = 21  # INTEGRITY
+    OSE = 22  # OSE
+    PLAN9 = 23  # Plan 9
+    OPENRTOS = 24  # OpenRTOS
+    ARM_TRUSTED_FIRMWARE = 25  # ARM Trusted Firmware
+    TEE = 26  # Trusted Execution Environment
+    OPENSBI = 27  # RISC-V OpenSBI
+    EFI = 28  # EFI Firmware (e.g. GRUB2)
+
+
+# Array containing the string with OS Names
+# corresponding to the ih_os numeric value
+OperatingSystem.LOOKUP_TABLE = [
+    'Invalid OS',
+    'OpenBSD',
+    'NetBSD',
+    'FreeBSD',
+    '4.4BSD',
+    'Linux',
+    'SVR4',
+    'Esix',
+    'Solaris',
+    'Irix',
+    'SCO',
+    'Dell',
+    'NCR',
+    'LynxOS',
+    'VxWorks',
+    'pSOS',
+    'QNX',
+    'Firmware',
+    'RTEMS',
+    'ARTOS',
+    'Unity',
+    'INTEGRITY',
+    "Enea OSE",
+    "Plan 9",
+    "OpenRTOS",
+    "ARM Trusted Firmware",
+    "Trusted Execution Environment",
+    "RISC-V OpenSBI",
+    "EFI Firmware"
 ]
 
-""" CPU Architecture Codes (supported by Linux) """
-IH_ARCH_INVALID    =0	# Invalid CPU
-IH_ARCH_ALPHA      =1	# Alpha
-IH_ARCH_ARM        =2	# ARM
-IH_ARCH_I386       =3	# Intel x86
-IH_ARCH_IA64       =4	# IA64
-IH_ARCH_MIPS       =5	# MIPS
-IH_ARCH_MIPS64     =6	# MIPS 64 Bit
-IH_ARCH_PPC        =7	# PowerPC
-IH_ARCH_S390       =8	# IBM S390
-IH_ARCH_SH         =9	# SuperH
-IH_ARCH_SPARC      =10	# Sparc
-IH_ARCH_SPARC64    =11	# Sparc 64 Bit
-IH_ARCH_M68K       =12	# M68K
-IH_ARCH_NIOS       =13	# Nios-32
-IH_ARCH_MICROBLAZE =14	# MicroBlaze
-IH_ARCH_NIOS2      =15	# Nios-II
-IH_ARCH_BLACKFIN   =16	# Blackfin
-IH_ARCH_AVR32      =17	# AVR32
-IH_ARCH_ST200      =18	# STMicroelectronics ST200
 
-""" Array containig the string with Architecture Names
-Corresponding to the ih_arch numeric value """
-IH_ARCH_LOOKUP= \
-[
-	'Invalid', \
-	'Alpha', \
-	'ARM', \
-	'Intel', \
-	'IA64', \
-	'MIPS', \
-	'MIPS', \
-	'PowerPC', \
-	'IBM', \
-	'SuperH', \
-	'Sparc', \
-	'Sparc', \
-	'M68K', \
-	'Nios-32', \
-	'MicroBlaze', \
-	'Nios-II', \
-	'Blackfin', \
-	'AVR32', \
-	'STMicroelectronics' \
+# CPU Architecture Codes (supported by Linux)
+class Architecture(_Codes):
+    INVALID = 0  # Invalid CPU
+    ALPHA = 1  # Alpha
+    ARM = 2  # ARM
+    I386 = 3  # Intel x86
+    IA64 = 4  # IA64
+    MIPS = 5  # MIPS
+    MIPS64 = 6  # MIPS 64 Bit
+    PPC = 7  # PowerPC
+    S390 = 8  # IBM S390
+    SH = 9  # SuperH
+    SPARC = 10  # Sparc
+    SPARC64 = 11  # Sparc 64 Bit
+    M68K = 12  # M68K
+    NIOS = 13  # Nios-32
+    MICROBLAZE = 14  # MicroBlaze
+    NIOS2 = 15  # Nios-II
+    BLACKFIN = 16  # Blackfin
+    AVR32 = 17  # AVR32
+    ST200 = 18  # STMicroelectronics ST200
+    SANDBOX = 19  # Sandbox architecture (test only)
+    NDS32 = 20  # ANDES Technology - NDS32
+    OPENRISC = 21  # OpenRISC 1000
+    ARM64 = 22  # ARM64
+    ARC = 23  # Synopsys DesignWare ARC
+    X86_64 = 24  # AMD x86_64, Intel and Via
+    XTENSA = 25  # Xtensa
+    RISCV = 26  # RISC-V
+
+
+# Array containing the string with Architecture Names
+# corresponding to the ih_arch numeric value
+Architecture.LOOKUP_TABLE = [
+    'Invalid',
+    'Alpha',
+    'ARM',
+    'Intel x86',
+    'IA64',
+    'MIPS',
+    'MIPS 64 Bit',
+    'PowerPC',
+    'IBM S390',
+    'SuperH',
+    'SPARC',
+    'SPARC 64 Bit',
+    'M68K',
+    'Nios-32',
+    'MicroBlaze',
+    'Nios-II',
+    'Blackfin',
+    'AVR32',
+    'STMicroelectronics ST200',
+    "Sandbox",
+    "NDS32",
+    "OpenRISC 1000",
+    "AArch64",
+    "ARC",
+    "AMD x86_64",
+    "Xtensa",
+    "RISC-V"
 ]
 
-IH_TYPE_INVALID    =0	# Invalid Image
-IH_TYPE_STANDALONE =1	# Standalone Program
-IH_TYPE_KERNEL     =2	# OS Kernel Image
-IH_TYPE_RAMDISK    =3	# RAMDisk Image
-IH_TYPE_MULTI      =4	# Multi-File Image
-IH_TYPE_FIRMWARE   =5	# Firmware Image
-IH_TYPE_SCRIPT     =6	# Script file
-IH_TYPE_FILESYSTEM =7	# Filesystem Image (any type)
-IH_TYPE_FLATDT     =8	# Binary Flat Device Tree Blob
-IH_TYPE_KWBIMAGE   =9	# Kirkwood Boot Image
 
-IH_TYPE_LOOKUP = [ \
-	'Invalid Image',\
-	'Standalone Program',\
-	'OS Kernel Image',\
-	'RAMDisk Image',\
-	'Multi-File Image',\
-	'Firmware Image',\
-	'Script file',\
-	'Filesystem Image (any type)',\
-	'Binary Flat Device Tree Blob',\
-	'Kirkwood Boot Image'\
+class Image(_Codes):
+    INVALID = 0  # Invalid Image
+    STANDALONE = 1  # Standalone Program
+    KERNEL = 2  # OS Kernel Image
+    RAMDISK = 3  # RAMDisk Image
+    MULTI = 4  # Multi-File Image
+    FIRMWARE = 5  # Firmware Image
+    SCRIPT = 6  # Script file
+    FILESYSTEM = 7  # Filesystem Image (any type)
+    FLATDT = 8  # Binary Flat Device Tree Blob
+    KWBIMAGE = 9  # Kirkwood Boot Image
+    IMXIMAGE = 10  # Freescale IMXBoot Image
+    UBLIMAGE = 11  # Davinci UBL Image
+    OMAPIMAGE = 12  # TI OMAP Config Header Image
+    AISIMAGE = 13  # TI Davinci AIS Image
+    KERNEL_NOLOAD = 14  # OS Kernel Image, can run from any load address
+    PBLIMAGE = 15  # Freescale PBL Boot Image
+    MXSIMAGE = 16  # Freescale MXSBoot Image
+    GPIMAGE = 17  # TI Keystone GPHeader Image
+    ATMELIMAGE = 18  # ATMEL ROM bootable Image
+    SOCFPGAIMAGE = 19  # Altera SOCFPGA CV/AV Preloader
+    X86_SETUP = 20  # x86 setup.bin Image
+    LPC32XXIMAGE = 21  # x86 setup.bin Image
+    LOADABLE = 22  # A list of typeless images
+    RKIMAGE = 23  # Rockchip Boot Image
+    RKSD = 24  # Rockchip SD card
+    RKSPI = 25  # Rockchip SPI image
+    ZYNQIMAGE = 26  # Xilinx Zynq Boot Image
+    ZYNQMPIMAGE = 27  # Xilinx ZynqMP Boot Image
+    ZYNQMPBIF = 28  # Xilinx ZynqMP Boot Image (bif)
+    FPGA = 29  # FPGA Image
+    VYBRIDIMAGE = 30  # VYBRID .vyb Image
+    TEE = 31  # Trusted Execution Environment OS Image
+    FIRMWARE_IVT = 32  # Firmware Image with HABv4 IVT
+    PMMC = 33  # TI Power Management Micro-Controller Firmware
+    STM32IMAGE = 34  # STMicroelectronics STM32 Image
+    SOCFPGAIMAGE_V1 = 35  # Altera SOCFPGA A10 Preloader
+    MTKIMAGE = 36  # MediaTek BootROM loadable Image
+    IMX8MIMAGE = 37  # Freescale IMX8MBoot Image
+    IMX8IMAGE = 38  # Freescale IMX8Boot Image
+    COPRO = 39  # Coprocessor Image for remoteproc
+    SUNXI_EGON = 40  # Allwinner eGON Boot Image
+    SUNXI_TOC0 = 41  # Allwinner TOC0 Boot Image
+    FDT_LEGACY = 42  # Binary Flat Device Tree Blob	in a Legacy Image
+
+
+Image.LOOKUP_TABLE = [
+    'Invalid Image',
+    'Standalone Program',
+    'OS Kernel Image',
+    'RAMDisk Image',
+    'Multi-File Image',
+    'Firmware Image',
+    'Script file',
+    'Filesystem Image (any type)',
+    'Binary Flat Device Tree Blob',
+    'Kirkwood Boot Image',
+    "Freescale i.MX Boot Image",
+    "Davinci UBL Image",
+    "TI OMAP SPL With GP CH",
+    "Davinci AIS image",
+    "Kernel Image (no loading done)",
+    "Freescale PBL Boot Image",
+    "Freescale MXS Boot Image",
+    "TI Keystone SPL Image",
+    "ATMEL ROM-Boot Image",
+    "Altera SoCFPGA CV/AV preloader",
+    "x86 setup.bin",
+    "LPC32XX Boot Image",
+    "A list of typeless images",
+    "Rockchip Boot Image",
+    "Rockchip SD Boot Image",
+    "Rockchip SPI Boot Image",
+    "Xilinx Zynq Boot Image",
+    "Xilinx ZynqMP Boot Image",
+    "Xilinx ZynqMP Boot Image (bif)",
+    "FPGA Image",
+    "Vybrid Boot Image",
+    "Trusted Execution Environment Image",
+    "Firmware with HABv4 IVT",
+    "TI Power Management Micro-Controller Firmware",
+    "STMicroelectronics STM32 Image",
+    "Altera SOCFPGA A10 Preloader",
+    "MediaTek BootROM loadable Image",
+    "NXP i.MX8M Boot Image",
+    "NXP i.MX8 Boot Image",
+    "Coprocessor Image",
+    "Allwinner eGON Boot Image",
+    "Allwinner TOC0 Boot Image",
+    "Legacy Image with Flat Device Tree"
 ]
 
-""" Compression Types """
-IH_COMP_NONE  =0	# No Compression Used
-IH_COMP_GZIP  =1	# gzip Compression Used
-IH_COMP_BZIP2 =2	# bzip2 Compression Used
-IH_COMP_LZMA  =3	# lzma Compression Used
 
-IH_COMP_LOOKUP = [ 'None','gzip','bzip2','lzma'] 
-
-IH_COMP_EXT_LOOKUP = [ 'dat','gz','bz2','lzma'] 
-
-
-IH_MAGIC = 0x27051956	# Image Magic Number
-IH_NMLEN =         32	# Image Name Length
+# Compression Types
+class Compression(_Codes):
+    NONE = 0  # No Compression Used
+    GZIP = 1  # gzip Compression Used
+    BZIP2 = 2  # bzip2 Compression Used
+    LZMA = 3  # lzma Compression Used
+    LZO = 4  # lzo Compression Used
+    LZ4 = 5  # lz4 Compression Used
+    ZSTD = 6  # zstd Compression Used
 
 
-class uboot_image:
-	"""Main class of this library containing
-	all the header fields and an array of binary images.
-	
-	Image Types
-	 "Standalone Programs" are directly runnable in the environment
-		provided by U-Boot; it is expected that (if they behave
-		well) you can continue to work in U-Boot after return from
-		the Standalone Program.
-	 "OS Kernel Images" are usually images of some Embedded OS which
-		will take over control completely. Usually these programs
-		will install their own set of exception handlers, device
-		drivers, set up the MMU, etc. - this means, that you cannot
-		expect to re-enter U-Boot except by resetting the CPU.
-	 "RAMDisk Images" are more or less just data blocks, and their
-		parameters (address, size) are passed to an OS kernel that is
-		being started.
-	 "Multi-File Images" contain several images, typically an OS
-		(Linux) kernel image and one or more data images like
-		RAMDisks. This construct is useful for instance when you want
-		to boot over the network using BOOTP etc., where the boot
-		server provides just a single image file, but you want to get
-		for instance an OS kernel and a RAMDisk image.
+Compression.LOOKUP_TABLE = ['None', 'gzip', 'bzip2', 'lzma', "lzo", "lz4", "zstd"]
 
-		"Multi-File Images" start with a list of image sizes, each
-		image size (in bytes) specified by an "uint32_t" in network
-		byte order. This list is terminated by an "(uint32_t)0".
-		Immediately after the terminating 0 follow the images, one by
-		one, all aligned on "uint32_t" boundaries (size rounded up to
-		a multiple of 4 bytes - except for the last file).
+IH_COMP_EXT_LOOKUP = ['dat', 'gz', 'bz2', 'lzma', "lzo", "lz4", "zst"]
 
-	 "Firmware Images" are binary images containing firmware (like
-		U-Boot or FPGA images) which usually will be programmed to
-		flash memory.
 
-	 "Script files" are command sequences that will be executed by
-		U-Boot's command interpreter; this feature is especially
-		useful when you configure U-Boot to use a real shell (hush)
-		as command interpreter (=> Shell Scripts).
-	"""
+IH_MAGIC = 0x27051956  # Image Magic Number
+IH_NMLEN = 32  # Image Name Length
 
-	def readInteger(self,myfile,length):
-		""" Assemble multibyte integer from file"""
-		ret = 0
-		for i in range(0,length):
-			ret = ret*256 + (ord(myfile.read(1))&0xFF)
-		return ret
-		
-	def readIntegers(self,myfile,lenghts):
-		""" Assemble multibyte integer array from file returning their list"""
-		ret = []
-		for length in lengths:
-  			val = self.readInteger(buf,myfile,lenght)
-  			ret.append( val )
-		return ret
 
-	def readShort(self,myfile):
-		""" Assemble 2 bytes integer """
-		return self.readInteger(myfile,2)
+class UBootImage:
+    """Main class of this library containing
+    all the header fields and an array of binary images.
 
-	def readInt(self,myfile):
-		""" Assemble 4 bytes integer """
-		return self.readInteger(myfile,4)
+    Image Types
+     "Standalone Programs" are directly runnable in the environment
+        provided by U-Boot; it is expected that (if they behave
+        well) you can continue to work in U-Boot after return from
+        the Standalone Program.
+     "OS Kernel Images" are usually images of some Embedded OS which
+        will take over control completely. Usually these programs
+        will install their own set of exception handlers, device
+        drivers, set up the MMU, etc. - this means, that you cannot
+        expect to re-enter U-Boot except by resetting the CPU.
+     "RAMDisk Images" are more or less just data blocks, and their
+        parameters (address, size) are passed to an OS kernel that is
+        being started.
+     "Multi-File Images" contain several images, typically an OS
+        (Linux) kernel image and one or more data images like
+        RAMDisks. This construct is useful for instance when you want
+        to boot over the network using BOOTP etc., where the boot
+        server provides just a single image file, but you want to get
+        for instance an OS kernel and a RAMDisk image.
 
-	def readLong(self,myfile):
-		""" Assemble 8 byte integer """
-		return self.readInteger(myfile,8)
-		
-	def makeInteger(self,buf,start,lenght):
-		""" Assemble multibyte integer from array"""
-		ret = 0
-		for i in range(start,start+lenght):
-			if sys.version_info[0] < 3:
-				ret = ret * 256 + (ord(buf[i]) & 0xFF)
-			else:
-				ret = ret * 256 + (int(buf[i]) & 0xFF)
-		return ret, start+lenght
-		
-	def makeIntegers(self,buf,start,lenghts):
-		""" Assemble a set of consecutive multibyte
-		integers given their lenghts and return them
-		in a list"""
-		ret = []
-		for length in lenghts:
-			val,start = self.makeInteger(buf,start,length)
-			ret.append( val )
-		ret.append( start )
-		return ret
+        "Multi-File Images" start with a list of image sizes, each
+        image size (in bytes) specified by an "uint32_t" in network
+        byte order. This list is terminated by an "(uint32_t)0".
+        Immediately after the terminating 0 follow the images, one by
+        one, all aligned on "uint32_t" boundaries (size rounded up to
+        a multiple of 4 bytes - except for the last file).
 
-	def v(self, lookup, n) :
-		"""Utility method to use this libraries lookup tables"""
-		if n<0 or n>=len(lookup) :
-			return '<not supported %02X>'%n
-		return lookup[n]
+     "Firmware Images" are binary images containing firmware (like
+        U-Boot or FPGA images) which usually will be programmed to
+        flash memory.
 
-	def __init__(self):
-		"""Main constructor that build not-initialized object"""
-		self.ih_magic=0	# Image Header Magic Number
-		self.ih_hcrc =0	# Image Header CRC Checksum
-		self.ih_time =0	# Image Creation Timestamp
-		self.ih_size =0	# Image Data Size
-		self.ih_load =0	# Data	 Load  Address
-		self.ih_ep   =0	# Entry Point Address
-		self.ih_dcrc =0	# Image Data CRC Checksum
-		self.ih_os   =0	# Operating System
-		self.ih_arch =0	# CPU architecture
-		self.ih_type =0	# Image Type
-		self.ih_comp =0	# Compression Type
-		self.ih_name =''# Image Name
-		self.parts   = []
-	
-	def fill(self,buf):
-		"""Fill the header only with the values read from buf array"""
-		self.ih_magic, \
-		self.ih_hcrc,  \
-		self.ih_time,  \
-		self.ih_size,  \
-		self.ih_load,  \
-		self.ih_ep,    \
-		self.ih_dcrc,  \
-		self.ih_os,    \
-		self.ih_arch,  \
-		self.ih_type,  \
-		self.ih_comp,  \
-		end = self.makeIntegers(buf,0,(4,4,4,4,4,4,4,1,1,1,1))
-		self.ih_name = buf[end:end + IH_NMLEN]
-		return end + IH_NMLEN
-	
-	def checkMagic(self):
-		"""Check if the magic number contained in ih_magic field is correct or not"""
-		return self.ih_magic == IH_MAGIC
-	
-	def parse(self, buf):
-		"""Read image header and extract the binary images"""
-		end = self.fill(buf)
-		if self.ih_type==IH_TYPE_MULTI :
-			parts = self.getMultiParts(buf,end)
-		else :
-			self.parts = [ buf[end:end+self.ih_size] ]
-		return self	
+     "Script files" are command sequences that will be executed by
+        U-Boot's command interpreter; this feature is especially
+        useful when you configure U-Boot to use a real shell (hush)
+        as command interpreter (=> Shell Scripts).
+    """
 
-	def os_name  (self): return self.v(IH_OS_LOOKUP  ,self.ih_os  )
-	def arch_name(self): return self.v(IH_ARCH_LOOKUP,self.ih_arch)
-	def type_name(self): return self.v(IH_TYPE_LOOKUP,self.ih_type)
-	def comp_name(self): return self.v(IH_COMP_LOOKUP,self.ih_comp)
+    FORMAT = "!7I4B32s"
+    SIZE = struct.calcsize(FORMAT)
+    FIELDS = [
+        "ih_magic", "ih_hcrc", "ih_time", "ih_size", "ih_load", "ih_ep",
+        "ih_dcrc", "ih_os", "ih_arch", "ih_type", "ih_comp", "ih_name"
+    ]
 
-	def getInfo(self):
-		"""Return a dictionary with a human-readable version
-		of the content of the header"""
-		return { \
-			"MAGIC":self.ih_magic,    \
-			"HCRC" :self.ih_hcrc,     \
-			"TIME" :self.ih_time,     \
-			"SIZE" :self.ih_size,     \
-			"LOAD" :self.ih_load,     \
-			"EP"   :self.ih_ep,       \
-			"DCRC" :self.ih_dcrc,     \
-			"OS"   :self.os_name(),   \
-			"ARCH" :self.arch_name(), \
-			"TYPE" :self.type_name(), \
-			"COMP" :self.comp_name(), \
-			"NAME" :self.ih_name,     \
-			"PARTS":len(self.parts)
-			}
+    def __init__(self):
+        """Main constructor that builds a non-initialized object."""
+        self.ih_magic = 0  # Image Header Magic Number
+        self.ih_hcrc = 0  # Image Header CRC Checksum
+        self.ih_time = 0  # Image Creation Timestamp
+        self.ih_size = 0  # Image Data Size
+        self.ih_load = 0  # Data Load Address
+        self.ih_ep = 0  # Entry Point Address
+        self.ih_dcrc = 0  # Image Data CRC Checksum
+        self.ih_os = 0  # Operating System
+        self.ih_arch = 0  # CPU architecture
+        self.ih_type = 0  # Image Type
+        self.ih_comp = 0  # Compression Type
+        self.ih_name = ''  # Image Name
+        self.parts = []
 
-	def getMultiParts(self,buf,start):
-		"""Internal method used by parse() to separate binary images"""
-		ofs = []
-		p = []
-		while True:
-			val,start = self.makeInteger(buf,start,4)
-			if val == 0 :
-				break
-			ofs.append(val)	
-		for size in ofs :
-			part = buf[start:start+size]
-			pad = (size%4)
-			if pad!=0 :
-				size += 4-pad
-			start += size
-			p.append(part)
-		self.parts = p
+    def fill(self, buf):
+        """Fill the header only with the values read from buf array."""
+        values = struct.unpack_from(self.FORMAT, buf)
+        for field, value in zip(self.FIELDS, values):
+            setattr(self, field, value)
+        self.ih_os = OperatingSystem(self.ih_os)
+        self.ih_arch = Architecture(self.ih_arch)
+        self.ih_type = Image(self.ih_type)
+        self.ih_comp = Compression(self.ih_comp)
+        self.ih_name = self.ih_name.rstrip(b'\x00').decode()
+
+    def checkMagic(self):
+        """Check if the magic number contained in ih_magic field is correct or not."""
+        return self.ih_magic == IH_MAGIC
+
+    def parse(self, buf):
+        """Read image header and extract the binary images."""
+        self.fill(buf)
+        if self.ih_type == Image.MULTI:
+            self.parts = self.getMultiParts(buf, self.SIZE)
+        else:
+            self.parts = [buf[self.SIZE : self.SIZE + self.ih_size]]
+        return self
+
+    @property
+    def os_name(self):
+        return str(self.ih_os)
+
+    @property
+    def arch_name(self):
+        return str(self.ih_arch)
+
+    @property
+    def type_name(self):
+        return str(self.ih_type)
+
+    @property
+    def comp_name(self):
+        return str(self.ih_comp)
+
+    def getInfo(self):
+        """Return a dictionary with a human-readable version
+        of the content of the header."""
+        return {
+            "MAGIC": self.ih_magic,
+            "HCRC": self.ih_hcrc,
+            "TIME": self.ih_time,
+            "SIZE": self.ih_size,
+            "LOAD": self.ih_load,
+            "EP": self.ih_ep,
+            "DCRC": self.ih_dcrc,
+            "OS": self.os_name,
+            "ARCH": self.arch_name,
+            "TYPE": self.type_name,
+            "COMP": self.comp_name,
+            "NAME": self.ih_name,
+            "PARTS": len(self.parts)
+        }
+
+    def getMultiParts(self, buf, start):
+        """Internal method used by parse() to separate binary images."""
+        ofs = []
+        p = []
+        fmt = "!I"
+        fmt_size = struct.calcsize(fmt)
+        while True:
+            val = struct.unpack_from(fmt, buf, start)[0]
+            if val == 0:
+                break
+            start += fmt_size
+            ofs.append(val)
+        for size in ofs:
+            part = buf[start : start + size]
+            pad = size % 4
+            if pad != 0:
+                size += 4 - pad
+            start += size
+            p.append(part)
+        return p
 
 
 if __name__ == '__main__':
-	if len(sys.argv) < 2:
-		sys.stdout.write('Usage: %s path_to_u-boot_image\n' % sys.argv[0])
-		sys.exit(0)
-	f = open(sys.argv[1], 'rb')
-	image_data = f.read()
-	f.close()
-	image = uboot_image().parse(image_data)
-	if not image.checkMagic() :
-		sys.stdout.write("Bad magic number!\n")
-		sys.exit(1)
-	sys.stdout.write("Found image!\n\t" + "\n\t".join( [ a[0].ljust(5) + ": " + str(a[1] if type(a[1]) != bytes else a[1].decode('latin-1')) for a in image.getInfo().items() ] ) + "\n")
-	format_string = 'part_%02d.' + IH_COMP_EXT_LOOKUP[image.ih_comp]
-	i = 0
-	for part in image.parts :
-		f = open( format_string % i, 'wb' )
-		f.write(part)
-		f.close()
-		i += 1
-	sys.exit(0)
+    if len(sys.argv) < 2:
+        print('Usage: %s path_to_u-boot_image' % sys.argv[0])
+        sys.exit(0)
+    with open(sys.argv[1], 'rb') as f:
+        image_data = f.read()
+    image = UBootImage().parse(image_data)
+    if not image.checkMagic():
+        print("Bad magic number!")
+        sys.exit(1)
+    print("Found image!\n\t" + "\n\t".join([key.ljust(5) + ": " + str(val) for key, val in image.getInfo().items()]))
+    format_string = 'part_%02d.' + IH_COMP_EXT_LOOKUP[image.ih_comp.value]
+    for i, part in enumerate(image.parts):
+        with open(format_string % i, 'wb') as f:
+            f.write(part)
